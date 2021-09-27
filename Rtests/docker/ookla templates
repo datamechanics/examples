@@ -1,0 +1,120 @@
+{
+  "type": "Java",
+  "sparkVersion": "3.0.0",
+  "image": "202306134469.dkr.ecr.us-west-2.amazonaws.com/dataeng-spark-dm-r:latest",
+  "imagePullPolicy": "Always",
+  "mainClass": "sparklyr.Shell",
+  "mainApplicationFile": "local:///usr/local/lib/R/site-library/sparklyr/java/sparklyr-3.0-2.12.jar",
+  "arguments": [
+    "8880",
+    "222",
+    "--batch",
+    "/opt/spark/work-dir/jobs/claims/test_global_claims.R"
+  ],
+  "sparkConf": {
+    "sparklyr.arrow": "TRUE",
+    "spark.r.command": "/usr/bin/Rscript",
+    "spark.r.libpaths": "/usr/lib/R/library",
+    "spark.executorEnv.SERVICE": "test",
+    "spark.executorEnv.S3_PATH_READ": "s3a://input",
+    "spark.executorEnv.S3_PATH_WRITE": "s3a://output/"
+  },
+  "hadoopConf": {
+    "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
+    "fs.s3a.endpoint": "s3.us-west-2.amazonaws.com",
+    "fs.s3a.assumed.role.arn": "arn:aws:iam::202306134469:role/datamechanics-tf",
+    "fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.AssumedRoleCredentialProvider",
+    "fs.s3a.assumed.role.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider"
+  }
+}
+
+========================================================================================
+
+{
+  "type": "Java",
+  "sparkVersion": "3.0.0",
+  "image": "202306134469.dkr.ecr.us-west-2.amazonaws.com/dataeng-spark-dm-r:dev",
+  "imagePullPolicy": "Always",
+  "mainClass": "sparklyr.Shell",
+  "mainApplicationFile": "local:///usr/local/lib/R/site-library/sparklyr/java/sparklyr-3.0-2.12.jar",
+  "sparkConf": {
+    "sparklyr.arrow": "TRUE",
+    "spark.r.command": "/usr/bin/Rscript",
+    "spark.r.libpaths": "/usr/lib/R/library",
+    "spark.executorEnv.SERVICE": "test",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.executorEnv.S3_PATH_READ": "s3a://input",
+    "spark.dynamicAllocation.enabled": "true",
+    "spark.executorEnv.S3_PATH_WRITE": "s3a://output/",
+    "spark.dynamicAllocation.maxExecutors": "4",
+    "spark.dynamicAllocation.minExecutors": "1",
+    "spark.dynamicAllocation.initialExecutors": "1",
+    "spark.sql.execution.arrow.maxRecordsPerBatch": "0",
+    "spark.kubernetes.executor.deleteOnTermination": "false",
+    "spark.dynamicAllocation.executorAllocationRatio": "1"
+  },
+  "hadoopConf": {
+    "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
+    "fs.s3a.endpoint": "s3.us-west-2.amazonaws.com",
+    "fs.s3a.assumed.role.arn": "arn:aws:iam::202306134469:role/datamechanics-tf",
+    "fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.AssumedRoleCredentialProvider",
+    "fs.s3a.assumed.role.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider"
+  },
+  "driver": {
+    "cores": 4,
+    "instanceType": "m5.xlarge",
+    "spot": false
+  },
+  "executor": {
+    "cores": 4,
+    "instanceType": "r5.xlarge",
+    "instances": 1,
+    "spot": true
+  },
+  "memoryOverheadFactor": "0.33"
+}
+
+{
+  "type": "Java",
+  "sparkVersion": "3.0.0",
+  "image": "202306134469.dkr.ecr.us-west-2.amazonaws.com/dataeng-spark-dm-r:latest",
+  "imagePullPolicy": "Always",
+  "mainClass": "sparklyr.Shell",
+  "mainApplicationFile": "local:///usr/local/lib/R/site-library/sparklyr/java/sparklyr-3.0-2.12.jar",
+  "sparkConf": {
+    "sparklyr.arrow": "TRUE",
+    "spark.r.command": "/usr/bin/Rscript",
+    "spark.r.libpaths": "/usr/lib/R/library",
+    "spark.executorEnv.SERVICE": "test",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.sql.shuffle.partitions": "1024",
+    "spark.executorEnv.S3_PATH_READ": "s3a://input",
+    "spark.dynamicAllocation.enabled": "true",
+    "spark.executorEnv.S3_PATH_WRITE": "s3a://output/",
+    "spark.dynamicAllocation.maxExecutors": "100",
+    "spark.dynamicAllocation.minExecutors": "1",
+    "spark.dynamicAllocation.initialExecutors": "16",
+    "spark.sql.execution.arrow.maxRecordsPerBatch": "0",
+    "spark.kubernetes.executor.deleteOnTermination": "false",
+    "spark.dynamicAllocation.executorAllocationRatio": "0.5"
+  },
+  "hadoopConf": {
+    "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
+    "fs.s3a.endpoint": "s3.us-west-2.amazonaws.com",
+    "fs.s3a.assumed.role.arn": "arn:aws:iam::202306134469:role/datamechanics-tf",
+    "fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.AssumedRoleCredentialProvider",
+    "fs.s3a.assumed.role.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider"
+  },
+  "driver": {
+    "cores": 4,
+    "instanceType": "m5.xlarge",
+    "spot": false
+  },
+  "executor": {
+    "cores": 4,
+    "instanceType": "r5.4xlarge",
+    "instances": 4,
+    "spot": true
+  },
+  "memoryOverheadFactor": "0.4"
+}

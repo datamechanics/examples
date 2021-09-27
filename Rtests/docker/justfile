@@ -1,0 +1,8 @@
+image_name := 'gcr.io/datamechanics/custom/sparklyr2'
+
+# Build the image and push it to the registry
+update:
+    docker image rm -f {{image_name}} .
+    docker build -t {{image_name}} .
+    docker push {{image_name}}
+    ./sparklyr2.sh
