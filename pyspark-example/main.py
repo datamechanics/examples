@@ -30,7 +30,7 @@ if __name__ == "__main__":
     spark._jsc.hadoopConfiguration().set("fs.AbstractFileSystem.s3a.impl", "org.apache.hadoop.fs.s3a.S3A")
 
     # read data from publc bucket into Spark DF
-    data_path = "s3a://dataforgood-fb-data/csv/"
+    data_path = "s3a://dataforgood-fb-data/csv/" 
     df = spark.read.csv(data_path)
 
     # apply spark transformations
@@ -39,14 +39,14 @@ if __name__ == "__main__":
     # build Koalas DF from Spark DF, get median, convert back to Spark DataFrame, add column with current date
     kDF = ks.DataFrame(transformedDF)
     medianDF = kDF.median().withColumn
-    finalDF = medianDF.to_spark().withColumn("date", lit(datetime.datetime.now()))
+    finalDF = medianDF.to_spark().withColumn("etl_time", lit(datetime.datetime.now()))
 
     # SQL metadata
     properties = {"user": os.environ['PG_USER'],"postgres": os.environ['PG_PASSWORD'],"driver": "org.postgresql.Driver"}
     url = f"jdbc:postgresql://{os.environ['PG_HOST']}:{os.environ['PG_PORT']}/{os.environ['PG_DB_NAME']}"
 
     # write to db
-    finalDF.write.jdbc(url=url, table="koalas", mode="overwrite", properties=properties)
+    finalDF.write.jdbc(url=url, table=os.environ['TABLE_NAME'], mode="overwrite", properties=properties)
 
 
 

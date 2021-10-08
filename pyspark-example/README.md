@@ -5,4 +5,5 @@ This tutorial demonstrates the process of building a Spark Docker image from one
 
 What you'll need:
 - Docker installed - https://docs.docker.com/get-docker/
-- 
+- A running Postgres instance with a table containing two columns, `etl_time DATETIME population DECIMAL(18,2)`
+- AWS Credentials (AWS still requires access key and secret for public datasets)
