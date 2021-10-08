@@ -1,6 +1,6 @@
 image_name := 'pyspark-example:dev'
-aws_access_key_id := ''
-aws_secret_access_key := ''
+aws_access_key_id := 'AKIAYF5FEZLDUOFDHL4K'
+aws_secret_access_key := 'uyTQ7jnuKfwpZ+S1Jcnr/M7DbD7yXyEFA5B1jyKv'
 postgres_user := ''
 postgres_password := ''
 postgres_host := ''
@@ -16,12 +16,10 @@ run:
         -e AWS_ACCESS_KEY_ID={{aws_access_key_id}} -e AWS_SECRET_ACCESS_KEY={{aws_secret_access_key}} \
         -e POSTGRES_USER={{postgres_user}} -e POSTGRES_PASSWORD={{postgres_password}} -e POSTGRES_HOST={{postgres_host}} \
         -e POSTGRES_PORT={{postgres_port}} -e POSTGRES_DB_NAME={{postgres_db_name}} \
-        {{image_name}} driver local:///opt/application/main.py {{args}}
+        {{image_name}} driver local:///opt/application/main.py 
 
 shell:
     docker run -it \
     -e AWS_ACCESS_KEY_ID={{aws_access_key_id}} -e AWS_SECRET_ACCESS_KEY={{aws_secret_access_key}} \
-    {{image_name}} /opt/spark/bin/pyspark --packages 
+    {{image_name}} /opt/spark/bin/pyspark --packages com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.0
 
-run-container-bash
-    docker run 
