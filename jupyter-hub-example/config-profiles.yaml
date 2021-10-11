@@ -1,0 +1,112 @@
+# This example shows how to add a Data Mechanics profile in the
+# list of Jupyter profiles in JupyterHub.
+# A JupyterHub profile will launch notebook kernels on Data Mechanics only
+# if it contains a `datamechanics_url` in `kubespawner_override` (see below).
+#
+# Please set the `datamechanics_url` to your own Data Mechanics URL.
+# The file `datamechanics.py` works as is and should not need to be adapted.
+proxy:
+    # Generate a custom secret for your installation with:
+    #
+    #   openssl rand -hex 32
+    #
+    secretToken: ea1a28fc09fff627f32dea783d658707cf8d35f8b98fdd4a98c5a0c8d5ba4920
+singleuser:
+    profileList:
+    -   display_name: Default Jupyter profile
+        description: This is the default Jupyter server. This is not using Data Mechanics.
+        default: true
+    -   display_name: Data Mechanics
+        description: Your code will run on the Data Mechanics platform with Spark support.
+        kubespawner_override:
+            datamechanics_url: https://dp-xxxxxxxx.datamechanics.co/notebooks/
+hub:
+  extraConfig:
+    datamechanics.py: |
+        from kubespawner import KubeSpawner
+        from traitlets import Unicode
+
+        class DataMechanicsProfileKubeSpawner(KubeSpawner):
+            """A KubeSpawner subclass that launches notebook kernels on the
+            Data Mechanics platform rather than on a Jupyter server pod.
+            This behavior is activated only if the config datamechanics_url is set
+            in the profile's kubespawner_override.
+            """
+
+            datamechanics_url = Unicode(
+                None,
+                allow_none=True,
+                config=True,
+                help="""
+                The URL to your Data Mechanics platform notebook API.
+                Typically: https://dp-xxxxxxxx.datamechanics.co/notebooks/
+                """,
+            )
+
+            async def options_from_form(self, form_data):
+                options = super().options_from_form(form_data)
+                if "profile" in options:
+                    self.log.info("A profile was selected")
+                    profile_slug = options["profile"]
+                    profile_dict = None
+                    for profile in self.profile_list:
+                        if profile["slug"] == profile_slug:
+                            profile_dict = profile
+                    if "kubespawner_override" in profile_dict and "datamechanics_url" in profile_dict["kubespawner_override"]:
+                        self.log.info("A gateway URL was found")
+                        options["datamechanics_url"] = profile_dict["kubespawner_override"]["datamechanics_url"]
+                        options["datamechanics_api_key"] = form_data[f"api_key-{profile_slug}"][0]
+                    else:
+                        self.log.info("No gateway URL found")
+                else:
+                    self.log.info("No profile was selected")
+                return options
+
+            async def load_user_options(self):
+                await super().load_user_options()
+                if "datamechanics_url" in self.user_options:
+                    datamechanics_url = self.user_options["datamechanics_url"]
+                    datamechanics_api_key = self.user_options["datamechanics_api_key"]
+                    self.args = [
+                        f"--gateway-url={datamechanics_url}",
+                        f"--GatewayClient.auth_token={datamechanics_api_key}",
+                        "--GatewayClient.request_timeout=600",
+                    ]
+                    self.log.info("Using Data Mechanics. Args: " + " ".join(self.args))
+                else:
+                    self.log.info("Not using Data Mechanics")
+
+        c.JupyterHub.spawner_class = DataMechanicsProfileKubeSpawner
+        c.KubeSpawner.profile_form_template = """
+            <script>
+            // JupyterHub 0.8 applied form-control indisciminately to all form elements.
+            // Can be removed once we stop supporting JupyterHub 0.8
+            $(document).ready(function() {
+                $('#kubespawner-profiles-list input[type="radio"]').removeClass('form-control');
+            });
+            </script>
+            <style>
+            /* The profile description should not be bold, even though it is inside the <label> tag */
+            #kubespawner-profiles-list label p {
+                font-weight: normal;
+            }
+            </style>
+            <div class='form-group' id='kubespawner-profiles-list'>
+            {% for profile in profile_list %}
+            <label for='profile-item-{{ loop.index0 }}' class='form-control input-group'>
+                <div class='col-md-1'>
+                    <input type='radio' name='profile' id='profile-item-{{ loop.index0 }}' value='{{ profile.slug }}' {% if profile.default %}checked{% endif %} />
+                </div>
+                <div class='col-md-11'>
+                    <strong>{{ profile.display_name }}</strong>
+                    {% if profile.description %}
+                    <p>{{ profile.description }}</p>
+                    {% endif %}
+                    {% if profile.kubespawner_override and profile.kubespawner_override.datamechanics_url %}
+                    Please enter a Data Mechanics API key: <input name="api_key-{{ profile.slug }}" />
+                    {% endif %}
+                </div>
+            </label>
+            {% endfor %}
+            </div>
+        """

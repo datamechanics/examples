@@ -1,0 +1,54 @@
+# This example displays a form before starting the notebooks server to
+# enter a Data Mechanics API key.
+# All notebook servers launched by JupyterHub will use Data Mechanics.
+#
+# The Data Mechanics URL is controlled by configuration
+# `c.DataMechanicsSingleUserKubeSpawner.gateway_url`. Please set it to
+# your own Data Mechanics URL.
+proxy:
+    # Generate a custom secret for your installation with:
+    #
+    #   openssl rand -hex 32
+    #
+    secretToken: ea1a28fc09fff627f32dea783d658707cf8d35f8b98fdd4a98c5a0c8d5ba4920
+hub:
+  extraConfig:
+        datamechanics.py: |
+            from kubespawner import KubeSpawner
+            from traitlets import Unicode
+
+            class DataMechanicsSingleUserKubeSpawner(KubeSpawner):
+                """A KubeSpawner subclass that launches notebook kernels on the
+                Data Mechanics platform rather than on a Jupyter server pod.
+                """
+
+                datamechanics_url = Unicode(
+                    None,
+                    allow_none=True,
+                    config=True,
+                    help="""
+                    The URL to your Data Mechanics platform notebook API.
+                    Typically: https://dp-xxxxxxxx.datamechanics.co/notebooks/
+                    """,
+                )
+
+                async def options_from_form(self, form_data):
+                    options = super().options_from_form(form_data)
+                    options["datamechanics_api_key"] = form_data[f"api_key"][0]
+                    return options
+
+                async def load_user_options(self):
+                    await super().load_user_options()
+                    datamechanics_api_key = self.user_options["datamechanics_api_key"]
+                    self.args = [
+                        f"--gateway-url={self.datamechanics_url}",
+                        f"--GatewayClient.auth_token={datamechanics_api_key}",
+                        "--GatewayClient.request_timeout=600",
+                    ]
+                    self.log.info("Using Data Mechanics. Args: " + " ".join(self.args))
+
+            c.JupyterHub.spawner_class = DataMechanicsSingleUserKubeSpawner
+            c.DataMechanicsSingleUserKubeSpawner.datamechanics_url = "https://dp-xxxxxxxx.datamechanics.co/notebooks/"
+            c.DataMechanicsSingleUserKubeSpawner.options_form = """
+                Please enter a Data Mechanics API key: <input name="api_key" />
+            """
