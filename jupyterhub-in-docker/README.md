@@ -1,4 +1,7 @@
-# Data Mechanics integration with JupyterHub in Docker
+# Data Mechanics integration with JupyterHub in Docker on single machine
+
+This is an example integration of a JupyterHub integration with the DataMechanics platform deploying JupyterHub on a single machine instance using Docker.
+
 
 ## Usage
 
